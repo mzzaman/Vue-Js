@@ -1,7 +1,15 @@
-<script setup></script>
+<script setup>
+import { ref } from 'vue';
+
+const isOrange = ref('color-orange');
+</script>
 
 <template>
-    <h1>Vue Js Template Syntax <span>Three</span></h1>
+    <h1 :class="isOrange">Vue Js Template Syntax <span>Three</span></h1>
 </template>
 
-<style scoped></style>
+<style scoped>
+.color-orange {
+    color: orange;
+}
+</style>
