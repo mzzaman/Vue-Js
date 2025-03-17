@@ -1,0 +1,123 @@
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue';
+
+
+const tasks = ref(
+    JSON.parse(
+        localStorage.getItem('tasks') ?? '[]'
+    )
+);
+const filteredTasks = computed(
+    () => tasks.value.filter(
+        task => task.description.toLowerCase()
+            .includes(filterText.value.toLowerCase())
+    )
+);
+const newTaskInput = ref(null);
+const newTask = ref('');
+const newPriority = ref('');
+const filterText = ref('');
+onMounted(() => {
+    newTaskInput.value.focus();
+});
+const addTask = () => {
+    if (newTask.value !== '' && newPriority.value !== '') {
+        tasks.value.unshift({
+            id: tasks.value.length + 1,
+            description: newTask.value,
+            priority: newPriority.value,
+            done: false
+        });
+        newTask.value = '';
+        newPriority.value = '';
+    }
+}
+const removeTask = (index) => {
+    tasks.value.splice(index, 1);
+};
+
+watch(tasks, () => {
+    localStorage.setItem(
+        'tasks',
+        JSON.stringify(tasks.value)
+    )
+}, { deep: true });
+
+</script>
+<template>
+    <h1>Vue Js Task Management</h1>
+
+    <form @submit.prevent="addTask">
+        <!-- Adding tasks form -->
+        <input ref="newTaskInput" placeholder="Add new task" v-model="newTask">
+        <select v-model="newPriority">
+            <option disabled value="">Select priority</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+        </select>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <!-- Task filtering -->
+    <input placeholder="Filter tasks..." v-model="filterText">
+
+    <!-- If there no tasks -->
+    <div v-if="tasks.length === 0">
+        <p>No tasks found. Try changing the filter or add some tasks!</p>
+    </div>
+
+    <div v-else>
+        <h3>Your Tasks</h3>
+        <!-- This is a list of tasks -->
+        <div v-for="(task, index) in filteredTasks" :key="task.id"
+            :class="{ 'task': true, completed: task.done, [task.priority.toLowerCase()]: true }">
+            <div>
+                <!-- Is task done? -->
+                <input type="checkbox" v-model="task.done">
+                <!-- Task description -->
+                <span>{{ task.description }}</span>
+            </div>
+            <!-- Removing a task -->
+            <button class="remove-button" @click="removeTask(index)">✖</button>
+        </div>
+    </div>
+
+</template>
+<style>
+.task {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border-left: 5px solid;
+}
+
+.high {
+    border-color: red;
+}
+
+.medium {
+    border-color: orange;
+}
+
+.low {
+    border-color: green;
+}
+
+.completed {
+    text-decoration: line-through;
+    color: #bbb;
+}
+
+.remove-button {
+    color: red;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 16px;
+}
+</style>
